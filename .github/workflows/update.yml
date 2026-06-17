@@ -1,0 +1,43 @@
+name: 更新基金淨值報表
+
+on:
+  schedule:
+    # 每 15 分鐘執行，台灣時間 09:00–13:45（UTC 01:00–05:45），週一至週五
+    - cron: '0,15,30,45 1-5 * * 1-5'
+  workflow_dispatch:   # 允許手動觸發
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 安裝依賴
+        run: pip install -r requirements.txt
+
+      - name: 執行報表程式
+        env:
+          FUGLE_API_KEY: ${{ secrets.FUGLE_API_KEY }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: python fund_nav_report.py
+
+      - name: 提交並推送 index.html
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --staged --quiet && echo "No changes" || \
+            git commit -m "chore: update report $(date -u '+%Y-%m-%d %H:%M UTC')" && \
+            git push
