@@ -447,10 +447,8 @@ async function triggerUpdate() {
     .toolbar{display:flex;justify-content:center;gap:12px;margin:0 auto 24px;flex-wrap:wrap}
     .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;
          font-size:.85rem;font-weight:600;cursor:pointer;border:none;transition:opacity .15s}
-    .btn-refresh{background:#3182ce;color:#fff}
     .btn-gh{background:#24292e;color:#fff}
     .btn:hover{opacity:.85}
-    .countdown{font-size:.78rem;color:#a0aec0;text-align:center;margin-bottom:20px}
     .sum-wrap{max-width:600px;margin:0 auto 32px;background:#fff;border-radius:14px;
               box-shadow:0 2px 16px rgba(0,0,0,.09);overflow:hidden}
     .sum-wrap h2{padding:14px 20px 10px;font-size:.95rem;font-weight:700;color:#2d3748;
@@ -520,7 +518,6 @@ async function triggerUpdate() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="refresh" content="900">
   <title>基金即時淨值推估</title>
   <style>{css}</style>
 </head>
@@ -532,10 +529,8 @@ async function triggerUpdate() {
   </div>
 
   <div class="toolbar">
-    <button class="btn btn-refresh" onclick="location.reload()">⟳ 重新整理頁面</button>
     {trigger_btn}
   </div>
-  <div class="countdown" id="cd">頁面將於 <span id="t">15:00</span> 後自動重新整理</div>
 
   <div class="sum-wrap">
     <h2>各基金推估排名</h2>
@@ -555,14 +550,6 @@ async function triggerUpdate() {
 
   <script>
     {trigger_js}
-    var s = 900;
-    var el = document.getElementById('t');
-    setInterval(function() {{
-      s--;
-      if (s <= 0) {{ location.reload(); return; }}
-      var m = Math.floor(s/60), sec = s%60;
-      el.textContent = m + ':' + (sec<10?'0':'') + sec;
-    }}, 1000);
   </script>
 </body>
 </html>"""
