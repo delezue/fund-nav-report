@@ -31,6 +31,7 @@ jobs:
         env:
           FUGLE_API_KEY: ${{ secrets.FUGLE_API_KEY }}
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: python fund_nav_report.py
 
       - name: 提交並推送 index.html

@@ -316,7 +316,7 @@ def _price(p):
     return f"{p:,.2f}"
 
 
-def generate_html(funds: list, generated_at: str, repo_url: str = "") -> str:
+def generate_html(funds: list, generated_at: str, repo_url: str = "", dispatch_token: str = "") -> str:
     ranked = sorted(funds, key=lambda f: f.get("est_change_pct") or -9999, reverse=True)
 
     summary_rows = ""
@@ -387,6 +387,43 @@ def generate_html(funds: list, generated_at: str, repo_url: str = "") -> str:
   </div>"""
 
     actions_link = f"{repo_url}/actions" if repo_url else "#"
+
+    # 手動觸發按鈕的 JS（token 在 build 時由 Actions 注入）
+    if dispatch_token:
+        trigger_btn = '<button id="btn-trigger" class="btn btn-gh" onclick="triggerUpdate()">&#9654; 手動觸發更新</button>'
+        trigger_js = f"""
+async function triggerUpdate() {{
+  var btn = document.getElementById('btn-trigger');
+  btn.textContent = '⏳ 觸發中...';
+  btn.disabled = true;
+  try {{
+    var r = await fetch(
+      'https://api.github.com/repos/delezue/fund-nav-report/actions/workflows/update.yml/dispatches',
+      {{
+        method: 'POST',
+        headers: {{
+          'Authorization': 'token {dispatch_token}',
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        }},
+        body: JSON.stringify({{ref: 'main'}})
+      }}
+    );
+    if (r.status === 204) {{
+      btn.textContent = '✅ 已觸發！約2分鐘後自動重整';
+      setTimeout(function() {{ location.reload(); }}, 120000);
+    }} else {{
+      btn.textContent = '❌ 失敗(' + r.status + ')';
+      btn.disabled = false;
+    }}
+  }} catch(e) {{
+    btn.textContent = '❌ 網路錯誤';
+    btn.disabled = false;
+  }}
+}}"""
+    else:
+        trigger_btn = f'<a class="btn btn-gh" href="{actions_link}" target="_blank">&#9654; 手動觸發更新</a>'
+        trigger_js = ""
 
     css = """
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -486,7 +523,7 @@ def generate_html(funds: list, generated_at: str, repo_url: str = "") -> str:
 
   <div class="toolbar">
     <button class="btn btn-refresh" onclick="location.reload()">⟳ 重新整理頁面</button>
-    <a class="btn btn-gh" href="{actions_link}" target="_blank">▶ 手動觸發更新</a>
+    {{trigger_btn}}
   </div>
   <div class="countdown" id="cd">頁面將於 <span id="t">15:00</span> 後自動重新整理</div>
 
@@ -507,6 +544,7 @@ def generate_html(funds: list, generated_at: str, repo_url: str = "") -> str:
   </div>
 
   <script>
+    {{trigger_js}}
     var s = 900;
     var el = document.getElementById('t');
     setInterval(function() {{
@@ -526,6 +564,7 @@ def generate_html(funds: list, generated_at: str, repo_url: str = "") -> str:
 
 def main():
     repo_url = os.environ.get("REPO_URL", "")
+    dispatch_token = os.environ.get("DISPATCH_TOKEN", "")
 
     print("=" * 55)
     print("  基金即時淨值推估工具")
@@ -581,7 +620,7 @@ def main():
     tw_hour = (now.hour + 8) % 24
     generated_at = now.strftime(f"%Y-%m-%d {tw_hour:02d}:%M:%S")
 
-    html = generate_html(funds, generated_at, repo_url)
+    html = generate_html(funds, generated_at, repo_url, dispatch_token)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
 
