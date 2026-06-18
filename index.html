@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="refresh" content="900">
   <title>基金即時淨值推估</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -17,10 +16,8 @@
     .toolbar{display:flex;justify-content:center;gap:12px;margin:0 auto 24px;flex-wrap:wrap}
     .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;
          font-size:.85rem;font-weight:600;cursor:pointer;border:none;transition:opacity .15s}
-    .btn-refresh{background:#3182ce;color:#fff}
     .btn-gh{background:#24292e;color:#fff}
     .btn:hover{opacity:.85}
-    .countdown{font-size:.78rem;color:#a0aec0;text-align:center;margin-bottom:20px}
     .sum-wrap{max-width:600px;margin:0 auto 32px;background:#fff;border-radius:14px;
               box-shadow:0 2px 16px rgba(0,0,0,.09);overflow:hidden}
     .sum-wrap h2{padding:14px 20px 10px;font-size:.95rem;font-weight:700;color:#2d3748;
@@ -88,15 +85,13 @@
 <body>
   <div class="ph">
     <h1>基金即時淨值推估報表</h1>
-    <p>產生時間：2026-06-18 13:33:57（台灣時間）　｜　資料來源：MoneyDJ 成分股 × Fugle 即時報價<br>
+    <p>產生時間：2026-06-18 13:43:50（台灣時間）　｜　資料來源：MoneyDJ 成分股 × Fugle 即時報價<br>
     ⚠️ 本報表以最新揭露持股加權計算，為推估值，不代表實際淨值，僅供參考。</p>
   </div>
 
   <div class="toolbar">
-    <button class="btn btn-refresh" onclick="location.reload()">⟳ 重新整理頁面</button>
     <button id="btn-trigger" class="btn btn-gh" onclick="triggerUpdate()">&#9654; 手動觸發更新</button>
   </div>
-  <div class="countdown" id="cd">頁面將於 <span id="t">15:00</span> 後自動重新整理</div>
 
   <div class="sum-wrap">
     <h2>各基金推估排名</h2>
@@ -590,16 +585,6 @@
               <td class="chg down">-0.08%</td>
             </tr>
             <tr>
-              <td class="code">2345</td>
-              <td class="sname" title="智邦">智邦</td>
-              <td class="wt">
-                <span class="bar-bg"><span class="bar-fg" style="width:14.0%"></span></span>
-                7.02%
-              </td>
-              <td class="px">2,435.00</td>
-              <td class="chg down">-2.40%</td>
-            </tr>
-            <tr>
               <td class="code">3037</td>
               <td class="sname" title="欣興">欣興</td>
               <td class="wt">
@@ -608,6 +593,16 @@
               </td>
               <td class="px">968.00</td>
               <td class="chg down">-2.02%</td>
+            </tr>
+            <tr>
+              <td class="code">2345</td>
+              <td class="sname" title="智邦">智邦</td>
+              <td class="wt">
+                <span class="bar-bg"><span class="bar-fg" style="width:14.0%"></span></span>
+                7.02%
+              </td>
+              <td class="px">2,435.00</td>
+              <td class="chg down">-2.40%</td>
             </tr>
             <tr>
               <td class="code">2330</td>
@@ -1556,14 +1551,6 @@ async function triggerUpdate() {
     btn.disabled = false;
   }
 }
-    var s = 900;
-    var el = document.getElementById('t');
-    setInterval(function() {
-      s--;
-      if (s <= 0) { location.reload(); return; }
-      var m = Math.floor(s/60), sec = s%60;
-      el.textContent = m + ':' + (sec<10?'0':'') + sec;
-    }, 1000);
   </script>
 </body>
 </html>
