@@ -523,7 +523,7 @@ async function triggerUpdate() {{
 
   <div class="toolbar">
     <button class="btn btn-refresh" onclick="location.reload()">⟳ 重新整理頁面</button>
-    {{trigger_btn}}
+    {trigger_btn}
   </div>
   <div class="countdown" id="cd">頁面將於 <span id="t">15:00</span> 後自動重新整理</div>
 
@@ -544,7 +544,7 @@ async function triggerUpdate() {{
   </div>
 
   <script>
-    {{trigger_js}}
+    {trigger_js}
     var s = 900;
     var el = document.getElementById('t');
     setInterval(function() {{
