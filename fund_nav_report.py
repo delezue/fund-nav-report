@@ -5,6 +5,7 @@
 再用 Fugle API 取得即時股價，加權推估基金淨值變動，最後輸出 HTML 報表。
 """
 
+import base64
 import io
 import os
 import re
@@ -391,18 +392,20 @@ def generate_html(funds: list, generated_at: str, repo_url: str = "", dispatch_t
     # 手動觸發按鈕的 JS（token 在 build 時由 Actions 注入）
     if dispatch_token:
         trigger_btn = '<button id="btn-trigger" class="btn btn-gh" onclick="triggerUpdate()">&#9654; 手動觸發更新</button>'
+        _enc = base64.b64encode(dispatch_token.encode()).decode()
         trigger_js = f"""
 async function triggerUpdate() {{
   var btn = document.getElementById('btn-trigger');
   btn.textContent = '⏳ 觸發中...';
   btn.disabled = true;
   try {{
+    var tok = atob('{_enc}');
     var r = await fetch(
       'https://api.github.com/repos/delezue/fund-nav-report/actions/workflows/update.yml/dispatches',
       {{
         method: 'POST',
         headers: {{
-          'Authorization': 'token {dispatch_token}',
+          'Authorization': 'token ' + tok,
           'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json'
         }},
