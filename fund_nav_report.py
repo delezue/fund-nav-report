@@ -5,7 +5,6 @@
 再用 Fugle API 取得即時股價，加權推估基金淨值變動，最後輸出 HTML 報表。
 """
 
-import base64
 import io
 import os
 import re
@@ -389,44 +388,52 @@ def generate_html(funds: list, generated_at: str, repo_url: str = "", dispatch_t
 
     actions_link = f"{repo_url}/actions" if repo_url else "#"
 
-    # 手動觸發按鈕的 JS（token 在 build 時由 Actions 注入）
-    if dispatch_token:
-        trigger_btn = '<button id="btn-trigger" class="btn btn-gh" onclick="triggerUpdate()">&#9654; 手動觸發更新</button>'
-        _enc = base64.b64encode(dispatch_token.encode()).decode()
-        trigger_js = f"""
-async function triggerUpdate() {{
+    # 手動觸發按鈕：token 存在瀏覽器 localStorage，不嵌入 HTML
+    trigger_btn = '<button id="btn-trigger" class="btn btn-gh" onclick="triggerUpdate()">&#9654; 手動觸發更新</button>'
+    trigger_js = """
+function _ghTok() {
+  var t = localStorage.getItem('ghpat');
+  if (!t) {
+    t = prompt('請輸入 GitHub PAT（需有 workflow 權限）：');
+    if (t) localStorage.setItem('ghpat', t.trim());
+  }
+  return t ? t.trim() : null;
+}
+async function triggerUpdate() {
   var btn = document.getElementById('btn-trigger');
+  var tok = _ghTok();
+  if (!tok) return;
   btn.textContent = '⏳ 觸發中...';
   btn.disabled = true;
-  try {{
-    var tok = atob('{_enc}');
+  try {
     var r = await fetch(
       'https://api.github.com/repos/delezue/fund-nav-report/actions/workflows/update.yml/dispatches',
-      {{
+      {
         method: 'POST',
-        headers: {{
+        headers: {
           'Authorization': 'token ' + tok,
           'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json'
-        }},
-        body: JSON.stringify({{ref: 'main'}})
-      }}
+        },
+        body: JSON.stringify({ref: 'main'})
+      }
     );
-    if (r.status === 204) {{
+    if (r.status === 204) {
       btn.textContent = '✅ 已觸發！約2分鐘後自動重整';
-      setTimeout(function() {{ location.reload(); }}, 120000);
-    }} else {{
+      setTimeout(function() { location.reload(); }, 120000);
+    } else if (r.status === 401) {
+      localStorage.removeItem('ghpat');
+      btn.textContent = '❌ Token 無效，請重新點擊設定';
+      btn.disabled = false;
+    } else {
       btn.textContent = '❌ 失敗(' + r.status + ')';
       btn.disabled = false;
-    }}
-  }} catch(e) {{
+    }
+  } catch(e) {
     btn.textContent = '❌ 網路錯誤';
     btn.disabled = false;
-  }}
-}}"""
-    else:
-        trigger_btn = f'<a class="btn btn-gh" href="{actions_link}" target="_blank">&#9654; 手動觸發更新</a>'
-        trigger_js = ""
+  }
+}"""
 
     css = """
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
